@@ -32,12 +32,19 @@ import androidx.preference.PreferenceManager
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
+import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.action.ViewActions
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.amaze.filemanager.R
+import com.amaze.filemanager.matcher.ActionMenuIconMatcher.withActionIconDrawable
 import com.amaze.filemanager.test.StoragePermissionHelper
 import com.amaze.filemanager.ui.activities.PreferencesActivity
 import com.amaze.filemanager.ui.fragments.preferencefragments.BackupPrefsFragment
@@ -117,7 +124,21 @@ class BackupPrefsFragmentTest {
 
         assertTrue(tempFile.exists())
 
-        onView(withId(R.id.home)).perform(ViewActions.click())
+        try {
+            // HACK to be able to open the overflow on smaller devices, but not on larger devices,
+            // as the overflow menu would hide the home button on larger devices
+
+            onView(withId(R.id.home))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
+            // Use icon if visible
+            onView(withActionIconDrawable(R.drawable.ic_home_white_24dp)).perform(ViewActions.click())
+        } catch (_: NoMatchingViewException) {
+            // Open the menu first, to be able to select the home button on smaller devices
+            openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getInstrumentation().targetContext)
+            // Use text if visible
+            onView(withText(R.string.home)).perform(ViewActions.click())
+        }
+
         onView(withText(R.string.save)).perform(ViewActions.click())
 
         assertTrue(exportFile.exists())
