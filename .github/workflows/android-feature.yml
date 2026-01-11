@@ -29,12 +29,12 @@ jobs:
           ndk-version: r28c
           link-to-sdk: true
           local-cache: true
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Check formatting using spotless
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: spotlessCheck --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: ./gradlew spotlessCheck --stacktrace
 
   build:
     name: Build debug and run Jacoco tests
@@ -79,11 +79,9 @@ jobs:
             echo "❌ .cargo/config.toml missing"
             exit 1
           fi
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Build with Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: assembledebug --stacktrace
+        run: ./gradlew assembledebug --stacktrace
       - name: Run test cases
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: jacocoTestPlayDebugUnitTestReport --stacktrace --info
+        run: ./gradlew jacocoTestPlayDebugUnitTestReport --stacktrace --info
