@@ -18,6 +18,10 @@ import org.hamcrest.Matcher
  * From https://stackoverflow.com/a/70108466/3124150
  */
 object ActionMenuIconMatcher {
+    /**
+     * A [Matcher] that will match against an [ActionMenuItemView] view with a specific icon
+     * resource
+     */
     @JvmStatic
     fun withActionIconDrawable(
         @DrawableRes resourceId: Int,
@@ -28,9 +32,11 @@ object ActionMenuIconMatcher {
             }
 
             override fun matchesSafely(actionMenuItemView: ActionMenuItemView): Boolean {
+                val iconDrawable = actionMenuItemView.itemData.icon ?: return false
+
                 return sameBitmap(
                     actionMenuItemView.context,
-                    actionMenuItemView.itemData.icon,
+                    iconDrawable,
                     resourceId,
                     actionMenuItemView,
                 )
@@ -38,18 +44,18 @@ object ActionMenuIconMatcher {
         }
     }
 
+    /**
+     * Compares a [Drawable] against a resource id, returns if they are identical
+     */
     @JvmStatic
     private fun sameBitmap(
         context: Context,
-        drawable: Drawable?,
-        resourceId: Int,
+        drawable: Drawable,
+        @DrawableRes resourceId: Int,
         view: View,
     ): Boolean {
         var drawable = drawable
-        val otherDrawable: Drawable? = context.resources.getDrawable(resourceId)
-        if (drawable == null || otherDrawable == null) {
-            return false
-        }
+        val otherDrawable: Drawable = context.resources.getDrawable(resourceId) ?: return false
 
         if (drawable is StateListDrawable) {
             val getStateDrawableIndex =
@@ -66,16 +72,16 @@ object ActionMenuIconMatcher {
             drawable = getStateDrawable.invoke(drawable, index) as Drawable
         }
 
-        val bitmap = getBitmapFromDrawable(context, drawable)
-        val otherBitmap = getBitmapFromDrawable(context, otherDrawable)
+        val bitmap = getBitmapFromDrawable(drawable)
+        val otherBitmap = getBitmapFromDrawable(otherDrawable)
         return bitmap.sameAs(otherBitmap)
     }
 
+    /**
+     * Convert a [Bitmap] to a [Drawable] by drawing to a canvas
+     */
     @JvmStatic
-    private fun getBitmapFromDrawable(
-        context: Context?,
-        drawable: Drawable,
-    ): Bitmap {
+    private fun getBitmapFromDrawable(drawable: Drawable): Bitmap {
         val bitmap: Bitmap =
             Bitmap.createBitmap(
                 drawable.intrinsicWidth,
