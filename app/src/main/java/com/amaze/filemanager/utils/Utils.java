@@ -55,11 +55,13 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.storage.StorageVolume;
 import android.text.format.DateUtils;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
@@ -495,4 +497,26 @@ public class Utils {
       ((InputMethodManager) mainActivity.getSystemService(Context.INPUT_METHOD_SERVICE))
           .hideSoftInputFromWindow(view.getWindowToken(), 0);
   }
+  
+  public static void configureTitleMarquee(TextView textView, boolean enableMarquee) {
+    if (enableMarquee) {
+        textView.setSingleLine(true);
+        textView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+        textView.setSelected(true);
+    } else {
+        textView.setSingleLine(false);
+        textView.setMaxLines(2);
+        textView.setEllipsize(TextUtils.TruncateAt.END);
+        textView.setSelected(false);
+    }
+  }
 }
+
+
+
+
+
+
+
+
+
