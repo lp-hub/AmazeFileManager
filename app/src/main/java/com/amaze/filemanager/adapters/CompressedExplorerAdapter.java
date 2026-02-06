@@ -220,8 +220,7 @@ public class CompressedExplorerAdapter extends RecyclerView.Adapter<CompressedIt
 
     boolean enableMarquee =
         sharedPrefs.getBoolean(PreferencesConstants.PREFERENCE_ENABLE_MARQUEE_FILENAME, true);
-    holder.txtTitle.setEllipsize(
-        enableMarquee ? TextUtils.TruncateAt.MARQUEE : TextUtils.TruncateAt.MIDDLE);
+    AnimUtils.configureTitleMarquee(holder.firstLine, enableMarquee);
 
     final CompressedObjectParcelable rowItem = items.get(position);
     GradientDrawable gradientDrawable = (GradientDrawable) holder.genericIcon.getBackground();

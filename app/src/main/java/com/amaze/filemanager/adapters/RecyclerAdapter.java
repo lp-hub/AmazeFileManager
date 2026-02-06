@@ -765,8 +765,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             mainFragment.adjustListViewForTv(holder, mainFragment.getMainActivity());
           }
         });
-    holder.txtTitle.setEllipsize(
-        enableMarquee ? TextUtils.TruncateAt.MARQUEE : TextUtils.TruncateAt.MIDDLE);
+    AnimUtils.configureTitleMarquee(holder.txtTitle, enableMarquee);
 
     final boolean isBackButton = getItemsDigested().get(position).specialType == TYPE_BACK;
     if (isBackButton) {

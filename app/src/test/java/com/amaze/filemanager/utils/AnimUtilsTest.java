@@ -71,4 +71,19 @@ public class AnimUtilsTest {
     ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     assertTrue(mock.isSelected());
   }
+
+  @Test
+  public static void configureTitleMarquee(TextView textView, boolean enableMarquee) {
+    if (enableMarquee) {
+        textView.setSingleLine(true);
+        textView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+        textView.setSelected(true); // Required for Marquee to move
+    } else {
+        // New custom behavior: Double line wrap!
+        textView.setSingleLine(false);
+        textView.setMaxLines(2);
+        textView.setEllipsize(TextUtils.TruncateAt.END);
+        textView.setSelected(false);
+    }
+}
 }
