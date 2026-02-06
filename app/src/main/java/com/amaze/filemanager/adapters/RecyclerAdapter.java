@@ -99,7 +99,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -527,11 +526,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
   @Override
   public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
-      super.onViewAttachedToWindow(holder);
-      // Use the variable already stored in 'this.enableMarquee' instead of sharedPrefs again!
-      if (this.enableMarquee && holder instanceof ItemViewHolder) {
-          AnimUtils.marqueeAfterDelay(2000, ((ItemViewHolder) holder).txtTitle);
-      }
+    super.onViewAttachedToWindow(holder);
+    // Use the variable already stored in 'this.enableMarquee' instead of sharedPrefs again!
+    if (this.enableMarquee && holder instanceof ItemViewHolder) {
+      AnimUtils.marqueeAfterDelay(2000, ((ItemViewHolder) holder).txtTitle);
+    }
   }
 
   @Override
