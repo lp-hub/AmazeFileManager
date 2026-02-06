@@ -527,13 +527,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
   @Override
   public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
-    super.onViewAttachedToWindow(holder);
-    boolean enableMarqueeFilename =
-        sharedPrefs.getBoolean(PreferencesConstants.PREFERENCE_ENABLE_MARQUEE_FILENAME, true);
-    if (enableMarqueeFilename && holder instanceof ItemViewHolder) {
-      AnimUtils.marqueeAfterDelay(2000, ((ItemViewHolder) holder).txtTitle);
-    }
-    super.onViewAttachedToWindow(holder);
+      super.onViewAttachedToWindow(holder);
+      // Use the variable already stored in 'this.enableMarquee' instead of sharedPrefs again!
+      if (this.enableMarquee && holder instanceof ItemViewHolder) {
+          AnimUtils.marqueeAfterDelay(2000, ((ItemViewHolder) holder).txtTitle);
+      }
   }
 
   @Override
