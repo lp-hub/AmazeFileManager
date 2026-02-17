@@ -95,14 +95,16 @@ public class ShadowPasswordUtilTest {
     String fingerprint = "00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff";
     String url = "ssh://test:test@127.0.0.1:22";
 
-    utilsHandler.saveToDatabase(
-        new OperationData(
-            UtilsHandler.Operation.SFTP,
-            NetCopyClientUtils.INSTANCE.encryptFtpPathAsNecessary(url),
-            "Test",
-            fingerprint,
-            null,
-            null));
+    utilsHandler
+        .saveToDatabase(
+            new OperationData(
+                UtilsHandler.Operation.SFTP,
+                NetCopyClientUtils.INSTANCE.encryptFtpPathAsNecessary(url),
+                "Test",
+                fingerprint,
+                null,
+                null))
+        .blockingAwait();
 
     await()
         .atMost(10, TimeUnit.SECONDS)

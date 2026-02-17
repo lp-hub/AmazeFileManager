@@ -2169,10 +2169,8 @@ public class MainActivity extends PermissionsActivity
     String[] s = new String[] {name, encryptedPath};
     if (!edit) {
       if ((dataUtils.containsServer(encryptedPath)) == -1) {
-        Completable.fromRunnable(
-                () ->
-                    utilsHandler.saveToDatabase(
-                        new OperationData(UtilsHandler.Operation.SMB, name, encryptedPath)))
+        utilsHandler
+            .saveToDatabase(new OperationData(UtilsHandler.Operation.SMB, name, encryptedPath))
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
