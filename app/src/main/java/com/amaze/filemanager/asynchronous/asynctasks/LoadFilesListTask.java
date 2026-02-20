@@ -551,29 +551,34 @@ public class LoadFilesListTask
     c.set(Calendar.DAY_OF_YEAR, c.get(Calendar.DAY_OF_YEAR) - 2);
     Date d = c.getTime();
     Cursor cursor;
-    if (SDK_INT >= Q) {
-      Bundle queryArgs = new Bundle();
-      queryArgs.putInt(ContentResolver.QUERY_ARG_LIMIT, 20);
-      queryArgs.putStringArray(
-          ContentResolver.QUERY_ARG_SORT_COLUMNS,
-          new String[] {MediaStore.Files.FileColumns.DATE_MODIFIED});
-      queryArgs.putInt(
-          ContentResolver.QUERY_ARG_SORT_DIRECTION,
-          ContentResolver.QUERY_SORT_DIRECTION_DESCENDING);
-      cursor =
-          context
-              .getContentResolver()
-              .query(MediaStore.Files.getContentUri("external"), projection, queryArgs, null);
-    } else {
-      cursor =
-          context
-              .getContentResolver()
-              .query(
-                  MediaStore.Files.getContentUri("external"),
-                  projection,
-                  null,
-                  null,
-                  MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC LIMIT 20");
+    try {
+      if (SDK_INT >= Q) {
+        Bundle queryArgs = new Bundle();
+        queryArgs.putInt(ContentResolver.QUERY_ARG_LIMIT, 20);
+        queryArgs.putStringArray(
+            ContentResolver.QUERY_ARG_SORT_COLUMNS,
+            new String[] {MediaStore.Files.FileColumns.DATE_MODIFIED});
+        queryArgs.putInt(
+            ContentResolver.QUERY_ARG_SORT_DIRECTION,
+            ContentResolver.QUERY_SORT_DIRECTION_DESCENDING);
+        cursor =
+            context
+                .getContentResolver()
+                .query(MediaStore.Files.getContentUri("external"), projection, queryArgs, null);
+      } else {
+        cursor =
+            context
+                .getContentResolver()
+                .query(
+                    MediaStore.Files.getContentUri("external"),
+                    projection,
+                    null,
+                    null,
+                    MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC LIMIT 20");
+      }
+    } catch (SecurityException e) {
+      // Storage permission denied; treat as no recent files instead of crashing.
+      return recentFiles;
     }
     if (cursor == null) return recentFiles;
     if (cursor.getCount() > 0 && cursor.moveToFirst()) {
