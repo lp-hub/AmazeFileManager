@@ -28,10 +28,10 @@ jobs:
           ndk-version: r28c
           link-to-sdk: true
           local-cache: true
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Check formatting using spotless
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: spotlessCheck
+        run: ./gradlew spotlessCheck
 
   build:
     name: Build debug, Jacoco test and publish to codacy
@@ -78,14 +78,12 @@ jobs:
             echo "❌ .cargo/config.toml missing"
             exit 1
           fi
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Build with Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: assembledebug
+        run: ./gradlew assembledebug
       - name: Run test cases
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: jacocoTestPlayDebugUnitTestReport
+        run: ./gradlew jacocoTestPlayDebugUnitTestReport
       - name: Publish test cases
         run: |
           export CODACY_PROJECT_TOKEN=${{ secrets.CODACY_TOKEN }}
@@ -153,8 +151,6 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache

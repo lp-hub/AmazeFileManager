@@ -27,18 +27,27 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.TIRAMISU
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions
+import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
+import androidx.test.espresso.NoMatchingViewException
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.amaze.filemanager.R
+import com.amaze.filemanager.matcher.ActionMenuIconMatcher.withActionIconDrawable
 import com.amaze.filemanager.test.StoragePermissionHelper
+import com.amaze.filemanager.ui.activities.MainActivity
 import com.amaze.filemanager.ui.activities.PreferencesActivity
 import com.amaze.filemanager.ui.fragments.preferencefragments.BackupPrefsFragment
 import com.google.gson.GsonBuilder
@@ -55,7 +64,6 @@ import java.io.File
 
 @RunWith(AndroidJUnit4::class)
 class BackupPrefsFragmentTest {
-    var storagePath = "/storage/emulated/0"
     var fileName = "amaze_backup.json"
 
     @Rule
@@ -86,6 +94,17 @@ class BackupPrefsFragmentTest {
     fun testPreferencesExportImport() {
         val context = ApplicationProvider.getApplicationContext<Context>()
 
+        // Get the device's home path
+        val activityScenario = ActivityScenario.launch(MainActivity::class.java)
+        activityScenario.moveToState(Lifecycle.State.RESUMED)
+
+        lateinit var storagePath: String
+        activityScenario.onActivity { mainActivity ->
+            storagePath = mainActivity.getStorageDirectories()[0].path
+        }
+
+        Log.i(BackupPrefsFragmentTest::class.java.simpleName, "File $storagePath")
+
         val exportFile = File("$storagePath${File.separator}$fileName")
         exportFile.delete() // delete if already exists
 
@@ -100,25 +119,32 @@ class BackupPrefsFragmentTest {
         context: Context,
         exportFile: File,
     ) {
-        val backupPrefsFragment = BackupPrefsFragment()
         val activityScenario = ActivityScenario.launch(PreferencesActivity::class.java)
+        activityScenario.moveToState(Lifecycle.State.RESUMED)
 
-        activityScenario.moveToState(Lifecycle.State.STARTED)
-
-        activityScenario.onActivity {
-            it.supportFragmentManager.beginTransaction()
-                .add(backupPrefsFragment, null)
-                .commitNow()
-
-            backupPrefsFragment.exportPrefs()
-        }
+        onView(withText(R.string.backup)).perform(click())
+        onView(withText(R.string.pref_export)).perform(click())
 
         val tempFile = File("${context.cacheDir.absolutePath}${File.separator}$fileName")
 
         assertTrue(tempFile.exists())
 
-        onView(withId(R.id.home)).perform(ViewActions.click())
-        onView(withText(R.string.save)).perform(ViewActions.click())
+        try {
+            // HACK to be able to open the overflow on smaller devices, but not on larger devices,
+            // as the overflow menu would hide the home button on larger devices
+
+            onView(withId(R.id.home))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
+            // Use icon if visible
+            onView(withActionIconDrawable(R.drawable.ic_home_white_24dp)).perform(click())
+        } catch (_: NoMatchingViewException) {
+            // Open the menu first, to be able to select the home button on smaller devices
+            openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getInstrumentation().targetContext)
+            // Use text if visible
+            onView(withText(R.string.home)).perform(click())
+        }
+
+        onView(withText(R.string.save)).perform(click())
 
         assertTrue(exportFile.exists())
 
@@ -171,8 +197,6 @@ class BackupPrefsFragmentTest {
             preferencesActivity.supportFragmentManager.beginTransaction()
                 .add(backupPrefsFragment, null)
                 .commitNow()
-
-            javaClass.getResourceAsStream("/$fileName")?.copyTo(exportFile.outputStream())
 
             backupPrefsFragment.onActivityResult(
                 BackupPrefsFragment.IMPORT_BACKUP_FILE,
