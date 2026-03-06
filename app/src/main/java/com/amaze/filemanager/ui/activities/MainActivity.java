@@ -254,6 +254,8 @@ public class MainActivity extends PermissionsActivity
   public String oppathe, oppathe1;
   public ArrayList<String> oppatheList;
 
+  private boolean hadStoragePermission;
+
   // This holds the Uris to be written at initFabToSave()
   private List<Uri> urisToBeSaved;
 
@@ -578,6 +580,25 @@ public class MainActivity extends PermissionsActivity
         requestNotificationPermission(true);
       }
     }
+  }
+
+  /** Ensures storage permission is granted before allowing filesystem browsing. */
+  private boolean ensureStoragePermission() {
+    if (SDK_INT < Build.VERSION_CODES.M) {
+      return true;
+    }
+
+    if (checkStoragePermission()) {
+      return true;
+    }
+
+    if (SDK_INT >= Build.VERSION_CODES.R) {
+      requestAllFilesAccess(this);
+    } else {
+      requestStoragePermission(this, true);
+    }
+
+    return false;
   }
 
   /** Checks for the action to take when Amaze receives an intent from external source */
@@ -1015,6 +1036,10 @@ public class MainActivity extends PermissionsActivity
    * @param hideFab Whether the FAB should be hidden in the new created {@link MainFragment} or not
    */
   public void goToMain(String path, boolean hideFab) {
+    // Prevent entering browsing UI if storage permission is missing.
+    if (!ensureStoragePermission()) {
+      return;
+    }
     FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
     // title.setText(R.string.app_name);
     TabFragment tabFragment = new TabFragment();
@@ -1354,6 +1379,15 @@ public class MainActivity extends PermissionsActivity
       materialDialog.show();
       materialDialog = null;
     }
+
+    boolean hasPermissionNow = checkStoragePermission();
+
+    if (!hadStoragePermission && hasPermissionNow) {
+      goToMain(null);
+    }
+
+    hadStoragePermission = hasPermissionNow;
+    ensureStoragePermission();
 
     drawer.refreshDrawer();
     drawer.refactorDrawerLockMode();
