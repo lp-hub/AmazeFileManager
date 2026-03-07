@@ -413,7 +413,15 @@ public class MainActivity extends PermissionsActivity
       getPrefs().edit().putBoolean(PREFERENCE_BOOKMARKS_ADDED, true).commit();
     }
 
-    checkForExternalPermission();
+    String actionIntent = intent != null ? intent.getAction() : null;
+
+    if (Intent.ACTION_GET_CONTENT.equals(actionIntent)
+        || RingtoneManager.ACTION_RINGTONE_PICKER.equals(actionIntent)
+        || Intent.ACTION_VIEW.equals(actionIntent)
+        || Intent.ACTION_SEND.equals(actionIntent)
+        || Intent.ACTION_SEND_MULTIPLE.equals(actionIntent)) {
+      checkForExternalPermission();
+    }
 
     Completable.fromRunnable(
             () -> {
@@ -584,7 +592,7 @@ public class MainActivity extends PermissionsActivity
 
   /** Ensures storage permission is granted before allowing filesystem browsing. */
   private boolean ensureStoragePermission() {
-    if (SDK_INT < Build.VERSION_CODES.M) {
+    if (SDK_INT < M) {
       return true;
     }
 
@@ -1036,10 +1044,6 @@ public class MainActivity extends PermissionsActivity
    * @param hideFab Whether the FAB should be hidden in the new created {@link MainFragment} or not
    */
   public void goToMain(String path, boolean hideFab) {
-    // Prevent entering browsing UI if storage permission is missing.
-    if (!ensureStoragePermission()) {
-      return;
-    }
     FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
     // title.setText(R.string.app_name);
     TabFragment tabFragment = new TabFragment();
