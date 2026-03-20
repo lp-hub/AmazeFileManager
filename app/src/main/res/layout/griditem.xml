@@ -159,7 +159,7 @@
                     android:paddingTop="2dp"
                     android:singleLine="true"
                     android:letterSpacing="0.02"
-                    android:textColor="#f7f7f7"
+                    android:textColor="?android:attr/textColorTertiary"
                     android:textAlignment="viewStart"
                     android:textSize="10sp" />
 
